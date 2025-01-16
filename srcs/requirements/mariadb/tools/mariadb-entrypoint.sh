@@ -6,6 +6,14 @@ set -e
 FIRST_RUN_FLAG="/etc/.firstrun"
 VOLUME_INIT_FLAG="/var/lib/mysql/.firstmount"
 
+# Validate all required environment variables
+for var in MYSQL_ROOT_PASSWORD MYSQL_DATABASE MYSQL_USER MYSQL_PASSWORD; do
+    if [ -z "${!var}" ]; then
+        echo "Error: $var is not set."
+        exit 1
+    fi
+done
+
 #Adding dynamic configrations on the first container run..
 if [ ! -e "$FIRST_RUN_FLAG" ]; then
 	echo "Configuring MariaDB server for the first run"
