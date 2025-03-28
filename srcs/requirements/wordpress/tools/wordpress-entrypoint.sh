@@ -16,17 +16,17 @@ if [ ! -f wp-config.php ]; then
     echo "Installing WordPress..."
 
     if [ ! -f index.php ]; then
-        wp --debug core download --allow-root
+        wp core download --allow-root
     fi
 
-    
+
     wp config create \
         --dbname=$MYSQL_DATABASE \
         --dbuser=$MYSQL_USER \
         --dbpass=$MYSQL_PASSWORD \
         --dbhost=mariadb \
         --allow-root
-    
+
     wp core install \
         --url=$DOMAIN_NAME \
         --title=$WORDPRESS_TITLE \
@@ -35,7 +35,7 @@ if [ ! -f wp-config.php ]; then
         --admin_email=$WORDPRESS_ADMIN_EMAIL \
         --allow-root
 
-    
+
     wp user create \
         $WORDPRESS_USER \
         $WORDPRESS_EMAIL \
