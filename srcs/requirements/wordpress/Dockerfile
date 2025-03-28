@@ -1,13 +1,6 @@
+FROM alpine:3.20
 
-FROM alpine:3.21
-
-RUN apk update && apk add --no-cache \
-    bash \
-    curl \
-    mariadb-client \
-    icu-data-full \
-    openssl \
-    php82 \
+RUN apk update && apk add --no-cache bash mariadb-client openssl php82 \
     php82-fpm \
     php82-mysqli \
     php82-json \
@@ -18,15 +11,17 @@ RUN apk update && apk add --no-cache \
     php82-xml \
     php82-phar \
     php82-session \
-    php82-zip \
-    php82-tokenizer \
-    php82-simplexml \
-    php82-pecl-redis
+    wget \
+    php82-zip
 
-RUN curl -o /usr/local/bin/wp -L https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x /usr/local/bin/wp
+RUN	mkdir -p /var/www/html && \
+	wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+	chmod +x wp-cli.phar && \
+	mv wp-cli.phar /usr/local/bin/wp && \
+	ln -s /usr/bin/php82 /usr/bin/php
 
 COPY conf/www.conf /etc/php82/php-fpm.d/www.conf
+COPY conf/php.ini /etc/php82/php.ini
 COPY tools/wordpress-entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/wordpress-entrypoint.sh

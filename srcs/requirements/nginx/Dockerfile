@@ -1,25 +1,18 @@
-# PenUltimate version of Alpine
-FROM alpine:3.21
+FROM alpine:3.20
 
-# Installing nginx, SSL, and bash
 RUN apk update && apk add --no-cache \
     nginx \
     openssl \
     bash
 
-# Creating SSL dir
 RUN mkdir -p /etc/nginx/ssl
 
-# Copying Nginx configuration and entrypoint script to container
 COPY conf/nginx.conf /etc/nginx/nginx.conf
-COPY tools/entrypoint.sh /usr/local/bin/
+COPY tools/nginx-entrypoint.sh /usr/local/bin/
 
-# Making the copied entrypoint script executable
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/nginx-entrypoint.sh
 
-# Exposing the used HTTPS port
 EXPOSE 443
 
-# Set the entrypoint and default command
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/nginx-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

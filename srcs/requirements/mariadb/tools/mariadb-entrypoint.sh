@@ -17,13 +17,11 @@ done
 #Adding dynamic configrations on the first container run..
 if [ ! -e "$FIRST_RUN_FLAG" ]; then
 	echo "Configuring MariaDB server for the first run"
+	
 	if ! grep -q "bind-address=0.0.0.0" /etc/my.cnf.d/mariadb-server.cnf; then
-	cat << EOF >> /etc/my.cnf.d/mariadb-server.cnf
-[mysqld]
-bind-address=0.0.0.0
-skip-networking=0
-EOF
-	touch "$FIRST_RUN_FLAG"
+	echo "bind-address=0.0.0.0" >> /etc/my.cnf.d/mariadb-server.cnf
+	echo "skip-networking=0" >> /etc/my.cnf.d/mariadb-server.cnf
+touch "$FIRST_RUN_FLAG"
 fi
 
 #Initializing the db dir if not initialized already
@@ -51,11 +49,11 @@ if [ ! -e "$VOLUME_INIT_FLAG" ]; then
     echo "Setting up initial SQLdatabase and user accounts..."
     mysql --protocol=socket -u root <<-EOF
         FLUSH PRIVILEGES;
-        ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
+        ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';
 
-        CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};
-        CREATE USER '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
-        GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
+        CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;
+        CREATE USER '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';
+        GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%';
 
         -- Clean up default users and test databases for security
         DELETE FROM mysql.user WHERE User='';
@@ -67,16 +65,16 @@ EOF
 
     #Shutting down the temporary server
     echo "Shutting down temporary MariaDB server..."
-    if ! mysqladmin shutdown; then
+    if ! mysqladmin -u root -p"$MYSQL_ROOT_PASSWORD"  shutdown; then
 		echo "Error: Failed to shut down temp MariaDB server."
 		exit 1
 	fi
 
-    #Making volume init flag
-    touch "$VOLUME_INIT_FLAG"
+   	 #Making volume init flag
+    	touch "$VOLUME_INIT_FLAG"
+	fi
 fi
 
 # Start the MariaDB server
 echo "Starting MariaDB server..."
 exec mysqld_safe
-
